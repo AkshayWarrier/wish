@@ -1,11 +1,12 @@
+#include <fcntl.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
 #include <sys/wait.h>
 #include <unistd.h>
 
-// char* path[] = {"/bin/", "/usr/bin/", NULL};
 char** path;
 
 void error(bool is_child) {
@@ -28,10 +29,23 @@ void write_path(char** array, int from, int to) {
 void execute(const char* input) {
   // Parse command
   char* command = strdup(input);
+  char* file = strchr(command, '>');
+  int redirect = false;
+  if (file != NULL) {
+    redirect = true;
+    *file = '\0';
+    file++;
+    while (*file == ' ' || *file == '\t') {
+      file++;
+    }
+    char* _f = file;
+    while (*_f != '\n') _f++;
+    *_f = '\0';
+  }
+
   char* args[32];
   char* arg = strtok(command, " \t\n");
   int i = 0;
-
   while (arg != NULL) {
     args[i++] = arg;
     arg = strtok(NULL, " \t\n");
@@ -71,10 +85,20 @@ void execute(const char* input) {
       strcat(full_path, "/");
       strcat(full_path, args[0]);
       if (access(full_path, X_OK) == 0) {
+        if (redirect) {
+          close(STDOUT_FILENO);
+          open(file, O_CREAT | O_WRONLY | O_TRUNC, S_IRWXU);
+        }
         execv(full_path, args);
       }
       p++;
     }
+
+    if (redirect) {
+      close(STDERR_FILENO);
+      open(file, O_CREAT | O_WRONLY | O_TRUNC, S_IRWXU);
+    }
+
     error(1);
   } else {
     int child = wait(NULL);
@@ -83,9 +107,9 @@ void execute(const char* input) {
 
 int main(int argc, const char* argv[]) {
   char* input;
-  size_t bufsize = 32;
+  size_t bufsize = 4096;
   char* init_path[] = {"/bin", NULL};
-  write_path(init_path,0,1);
+  write_path(init_path, 0, 1);
   while (true) {
     printf("wish> ");
     input = (char*)malloc(bufsize * sizeof(char));
