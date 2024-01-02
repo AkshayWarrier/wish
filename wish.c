@@ -26,9 +26,8 @@ void write_path(char** array, int from, int to) {
   path[i] = NULL;
 }
 
-void execute(const char* input) {
+void execute(char* command) {
   // Parse command
-  char* command = strdup(input);
   char* file = strchr(command, '>');
   int redirect = false;
   if (file != NULL) {
@@ -85,10 +84,12 @@ void execute(const char* input) {
       strcat(full_path, "/");
       strcat(full_path, args[0]);
       if (access(full_path, X_OK) == 0) {
+
         if (redirect) {
           close(STDOUT_FILENO);
           open(file, O_CREAT | O_WRONLY | O_TRUNC, S_IRWXU);
         }
+        
         execv(full_path, args);
       }
       p++;
@@ -114,7 +115,19 @@ int main(int argc, const char* argv[]) {
     printf("wish> ");
     input = (char*)malloc(bufsize * sizeof(char));
     getline(&input, &bufsize, stdin);
-    execute(input);
+    char* cmd;
+    char* command; 
+    while ((cmd = strchr(input, '&')) != NULL) {
+      *cmd = '\0';
+      command = strdup(input);
+      execute(command);
+      free(command);
+      cmd++;
+      input = cmd;
+    }
+    command = strdup(input);
+    execute(command);
+    free(command);
   }
   free(input);
   return 0;
