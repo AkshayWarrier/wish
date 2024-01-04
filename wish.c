@@ -41,8 +41,8 @@ void execute(char* input) {
   char* command = strtok_r(input, "&", &saveptr);
   int forks[10];
   int pi = 0;
+  
   while ((command != NULL)) {
-
     // Parse command
     char* file = strchr(command, '>');
     bool redirect = false;
@@ -87,7 +87,7 @@ void execute(char* input) {
         arg = strtok(NULL, " \t\n");
       }
     }
-    
+
     if (i == 0) {
       if (redirect) error(0);
       return;
