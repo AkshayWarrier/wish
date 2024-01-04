@@ -7,7 +7,7 @@ wish supports
 - Parallel commands
 - Output redirection
 
-It passes (almost) all the tests. To build wish simply `make wish`. Then wish can be run in interactive mode using `./wish` or batch mode using `./wish batch.txt` which takes an input file to run commands. To run tests, simply run `./run-tests.sh`.
+It passes all the tests (except one, for some reason). To build wish simply `make wish`. Then wish can be run in interactive mode using `./wish` or batch mode using `./wish batch.txt` which takes an input file to run commands. To run tests, simply run `./run-tests.sh`.
 
 The detailed project description can be found [here](https://github.com/remzi-arpacidusseau/ostep-projects/tree/master/processes-shell)
 
